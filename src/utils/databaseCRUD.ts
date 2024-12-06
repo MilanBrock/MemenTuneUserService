@@ -1,12 +1,18 @@
 import { AppDataSource } from "../config/database";
-import { TestEntity } from "../entities/testEntity";
+import { User } from "../entities/User";
 
 
-export async function createTestEntity(value: string): Promise<Boolean> {
+export async function createUser(username: string, password: string, description?: string): Promise<Boolean> {
     !AppDataSource.isInitialized ? await AppDataSource.initialize() : null;
-    const testEntity = new TestEntity();
-    testEntity.value = value;
-    const assignedId = await AppDataSource.getRepository(TestEntity).save(testEntity);
+
+    let newUser = null;
+    if (description) {
+        newUser = new User(username, password, description);
+    } else {
+        newUser = new User(username, password);
+    }
+    
+    const assignedId = await AppDataSource.getRepository(User).save(newUser);
 
     if (assignedId) {
         return true;
@@ -15,9 +21,9 @@ export async function createTestEntity(value: string): Promise<Boolean> {
     }
 }
 
-export async function readTestEntity(id: number): Promise<TestEntity | null> {
+export async function readUser(id: number): Promise<User | null> {
     !AppDataSource.isInitialized ? await AppDataSource.initialize() : null;
-    const testEntity = await AppDataSource.getRepository(TestEntity).findOne({ where: { id } });
+    const testEntity = await AppDataSource.getRepository(User).findOne({ where: { id } });
 
     if (testEntity) {
         return testEntity;
@@ -26,13 +32,13 @@ export async function readTestEntity(id: number): Promise<TestEntity | null> {
     }
 }
 
-export async function updateTestEntity(id: number, value: string): Promise<Boolean> {
+export async function updateUserDescription(id: number, value: string): Promise<Boolean> {
     !AppDataSource.isInitialized ? await AppDataSource.initialize() : null;
-    const testEntity = await AppDataSource.getRepository(TestEntity).findOne({ where: { id } });
+    const testEntity = await AppDataSource.getRepository(User).findOne({ where: { id } });
 
     if (testEntity) {
-        testEntity.value = value;
-        const assignedId = await AppDataSource.getRepository(TestEntity).save(testEntity);
+        testEntity.description = value;
+        const assignedId = await AppDataSource.getRepository(User).save(testEntity);
         if (assignedId) {
             return true;
         }
@@ -40,12 +46,27 @@ export async function updateTestEntity(id: number, value: string): Promise<Boole
     return false;
 }
 
-export async function deleteTestEntity(id: number): Promise<Boolean> {
+export async function updateUserDescriptionVector(id: number, value: string): Promise<Boolean> {
     !AppDataSource.isInitialized ? await AppDataSource.initialize() : null;
-    const testEntity = await AppDataSource.getRepository(TestEntity).findOne({ where: { id } });
+    const testEntity = await AppDataSource.getRepository(User).findOne({ where: { id } });
 
     if (testEntity) {
-        const deletedEntity = await AppDataSource.getRepository(TestEntity).delete(id);
+        testEntity.descriptionEmbed = value;
+        const assignedId = await AppDataSource.getRepository(User).save(testEntity);
+        if (assignedId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+export async function deleteUser(id: number): Promise<Boolean> {
+    !AppDataSource.isInitialized ? await AppDataSource.initialize() : null;
+    const testEntity = await AppDataSource.getRepository(User).findOne({ where: { id } });
+
+    if (testEntity) {
+        const deletedEntity = await AppDataSource.getRepository(User).delete(id);
         if (deletedEntity) {
             return true;
         }
